@@ -199,7 +199,7 @@ export class OrAndBuilder<CALLER extends ViewtonQueryBuilder> {
         return this;
     }
 
-    or(value: string): OrAndBuilder<CALLER> {
+    or(value: any): OrAndBuilder<CALLER> {
         if (this.ic) {
             value = '^' + value;
             this.ic = false
