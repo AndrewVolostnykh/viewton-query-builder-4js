@@ -30,12 +30,12 @@ export class ViewtonQueryBuilder {
         this.params.set(filterBuilder.fieldName, filterBuilder.value);
     }
 
-    page<B extends ViewtonQueryBuilder>(page: number):B {
+    page<B extends ViewtonQueryBuilder>(page: number): B {
         this.params.set('page', page + '');
         return this as unknown as B;
     }
 
-    noPagination<B extends ViewtonQueryBuilder>():B {
+    noPagination<B extends ViewtonQueryBuilder>(): B {
         this.params.set(pageSizeParamName, '-1');
         return this as unknown as B;
     }
@@ -45,25 +45,44 @@ export class ViewtonQueryBuilder {
         return this as unknown as B;
     }
 
-    count<B extends ViewtonQueryBuilder>():B {
+    count<B extends ViewtonQueryBuilder>(): B {
         this.params.set('count', 'true');
         return this as unknown as B;
     }
 
-    distinct<B extends ViewtonQueryBuilder>():B {
+    distinct<B extends ViewtonQueryBuilder>(): B {
         this.params.set('distinct', 'true');
         return this as unknown as B;
     }
 
-    total<B extends ViewtonQueryBuilder>():B {
+    total<B extends ViewtonQueryBuilder>(): B {
         this.params.set('total', 'true');
         return this as unknown as B;
     }
 
-    totalAttributes<B extends ViewtonQueryBuilder>():B {
-        this.params.set('total', 'true');
+    attributes<B extends ViewtonQueryBuilder>(...attributes: FilterBuilder<B>[]): B {
+        return this.toAttributes('attributes', attributes);
+    }
+
+    totalAttributes<B extends ViewtonQueryBuilder>(...attributes: FilterBuilder<B>[]): B {
+        return this.toAttributes('totalAttributes', attributes);
+    }
+
+    private toAttributes<B extends ViewtonQueryBuilder>(paramName: string, attributes: FilterBuilder<B>[]): B {
+        let result = attributes
+            ?.map(attribute => attribute.fieldName)
+            .join(',');
+
+        if (result !== undefined && result !== null && result !== '') {
+            this.params.set(paramName, result);
+        }
+
         return this as unknown as B;
     }
+}
+
+export interface ParamsSelector<BUILDER extends ViewtonQueryBuilder> {
+    select(selector: BUILDER): FilterBuilder<BUILDER>[];
 }
 
 export class FilterBuilder<CALLER extends ViewtonQueryBuilder> {
@@ -117,14 +136,20 @@ export class FilterBuilder<CALLER extends ViewtonQueryBuilder> {
         return this.caller;
     }
 
-    between(than: any): CALLER {
-        this.value = Operators.GREATER + than;
+    between(lower: any, greater: any): CALLER {
+        this.value = lower.toString() + Operators.BETWEEN + greater.toString();
         this.caller.registerParam(this);
         return this.caller;
     }
 
     less(than: any): CALLER {
         this.value = Operators.LESS + than;
+        this.caller.registerParam(this);
+        return this.caller;
+    }
+
+    greater(than: any): CALLER {
+        this.value = Operators.GREATER + than;
         this.caller.registerParam(this);
         return this.caller;
     }
@@ -141,6 +166,16 @@ export class FilterBuilder<CALLER extends ViewtonQueryBuilder> {
         this.caller.registerParam(this);
         return this.caller;
     }
+
+    or(value: any):OrAndBuilder<CALLER> {
+        this.value = value.toString();
+        if (this.ic) {
+            this.value = '^' + this.value;
+            this.ic = false;
+        }
+
+        return new OrAndBuilder<CALLER>(this.caller, this);
+    }
 }
 
 export class OrAndBuilder<CALLER extends ViewtonQueryBuilder> {
@@ -148,23 +183,23 @@ export class OrAndBuilder<CALLER extends ViewtonQueryBuilder> {
     param: FilterBuilder<CALLER>;
     ic: boolean;
 
-    constructor(caller: CALLER, param:FilterBuilder<CALLER> ) {
+    constructor(caller: CALLER, param: FilterBuilder<CALLER>) {
         this.caller = caller;
         this.param = param;
         this.ic = false;
     }
 
-    next():CALLER {
+    next(): CALLER {
         this.caller.registerParam(this.param);
         return this.caller;
     }
 
-    ignoreCase():OrAndBuilder<CALLER> {
+    ignoreCase(): OrAndBuilder<CALLER> {
         this.ic = true;
         return this;
     }
 
-    or(value:string):OrAndBuilder<CALLER> {
+    or(value: string): OrAndBuilder<CALLER> {
         if (this.ic) {
             value = '^' + value;
             this.ic = false
