@@ -1,11 +1,11 @@
 Viewton Parameter Builder
 ---
 
-This is a Parameter Builder for the [Viewton]() library, designed to make constructing client-side queries more declarative and easier. 
+This is a Parameter Builder for the [Viewton](https://github.com/AndrewVolostnykh/viewton) library, designed to make constructing client-side queries more declarative and easier. 
 
 It is intended for use in environments where JavaScript is used for implementing client side (for instance classical font-end). 
 
-It is a full analog of the [ViewtonQueryBuilder]().
+It is a full analog of the [ViewtonQueryBuilder](https://github.com/AndrewVolostnykh/viewton/blob/main/src/main/java/andrew/volostnykh/viewton/ViewtonQueryBuilder.java).
 
 The builder includes all parameters that can be used when constructing a query to the backend.
 
