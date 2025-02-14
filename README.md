@@ -1,4 +1,4 @@
-Viewton Parameter Builder
+Viewton Request Builder
 ---
 
 This is a Parameter Builder for the [Viewton](https://github.com/AndrewVolostnykh/viewton) library, designed to make constructing client-side queries more declarative and easier. 
